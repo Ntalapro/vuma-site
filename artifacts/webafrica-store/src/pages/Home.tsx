@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Navigation2, Loader2, ChevronDown, Search } from "lucide-react";
+import { useCreateLocation } from "@workspace/api-client-react";
 import webafricaLogo from "@assets/webafrica-logo-white.svg";
 
 const products = [
@@ -78,6 +79,26 @@ export default function Home() {
   });
 
   const [watchId, setWatchId] = useState<number | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const createLocation = useCreateLocation();
+
+  const persistLocation = (coords: { lat: number; lng: number; accuracy: number }) => {
+    setSaveStatus("saving");
+    createLocation.mutate(
+      {
+        data: {
+          latitude: coords.lat,
+          longitude: coords.lng,
+          accuracy: coords.accuracy,
+        },
+      },
+      {
+        onSuccess: () => setSaveStatus("saved"),
+        onError: () => setSaveStatus("error"),
+      },
+    );
+  };
 
   const stopTracking = () => {
     if (watchId !== null) {
@@ -98,17 +119,19 @@ export default function Home() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
         setGeoState({
           loading: false,
           error: null,
-          coords: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            accuracy: position.coords.accuracy
-          },
+          coords,
           timestamp: new Date(),
           isTracking: false
         });
+        persistLocation(coords);
       },
       (error) => {
         setGeoState(prev => ({
@@ -132,17 +155,19 @@ export default function Home() {
 
     const id = navigator.geolocation.watchPosition(
       (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
         setGeoState({
           loading: false,
           error: null,
-          coords: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            accuracy: position.coords.accuracy
-          },
+          coords,
           timestamp: new Date(),
           isTracking: true
         });
+        persistLocation(coords);
       },
       (error) => {
         setGeoState(prev => ({
@@ -374,6 +399,14 @@ export default function Home() {
                     <p className="font-mono font-medium" data-testid="text-geo-accuracy">Within {Math.round(geoState.coords.accuracy)}m</p>
                   </div>
                 </div>
+
+                {saveStatus !== "idle" && (
+                  <p className="text-xs mt-2" data-testid="text-save-status">
+                    {saveStatus === "saving" && <span className="text-gray-400">Saving location…</span>}
+                    {saveStatus === "saved" && <span className="text-green-600 font-medium">✓ Location saved</span>}
+                    {saveStatus === "error" && <span className="text-red-500 font-medium">Could not save location</span>}
+                  </p>
+                )}
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
                   <span className="text-xs text-gray-400" data-testid="text-geo-timestamp">

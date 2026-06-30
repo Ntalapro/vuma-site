@@ -5,9 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
 
 export interface SharedLocation {
   id: number;
@@ -17,17 +14,5 @@ export interface SharedLocation {
   longitude: number;
   /** @nullable */
   accuracy?: number | null;
-  createdAt: string;
+  createdAt: Date;
 }
-
-export interface SharedLocationInput {
-  label?: string;
-  latitude: number;
-  longitude: number;
-  accuracy?: number;
-}
-
-export interface Error {
-  error: string;
-}
-

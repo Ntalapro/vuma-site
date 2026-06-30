@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: locations
+    description: Shared location operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /locations:
+    post:
+      operationId: createLocation
+      tags: [locations]
+      summary: Store a shared location
+      description: Stores coordinates shared by a user who consented via the browser permission prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SharedLocationInput"
+      responses:
+        "201":
+          description: Location stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharedLocation"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +60,46 @@ components:
           type: string
       required:
         - status
+    SharedLocation:
+      type: object
+      required:
+        - id
+        - latitude
+        - longitude
+        - createdAt
+      properties:
+        id:
+          type: integer
+        label:
+          type: ["string", "null"]
+        latitude:
+          type: number
+        longitude:
+          type: number
+        accuracy:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+    SharedLocationInput:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        label:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        accuracy:
+          type: number
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
 

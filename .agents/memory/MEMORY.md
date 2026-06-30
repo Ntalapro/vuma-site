@@ -1,0 +1,1 @@
+- [Location sharing feature](location-feature.md) — consent-based geolocation only; never expose stored coords via an unauthenticated read endpoint.
