@@ -43,8 +43,8 @@ jobs:
           PORT: "5000"
           # GitHub Project Pages serve from /<repo-name>/.
           BASE_PATH: "/famTrackerApp/"
-          # Set this repository variable to your Replit API URL, e.g.
-          # https://your-app.replit.app/api
+          # Set this repository variable to your Replit app ORIGIN, e.g.
+          # https://your-app.replit.app  (a trailing /api is tolerated too).
           VITE_API_URL: ${{ vars.VITE_API_URL }}
         run: pnpm --filter @workspace/webafrica-store run build
 
