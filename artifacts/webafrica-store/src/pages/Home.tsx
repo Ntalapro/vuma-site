@@ -268,7 +268,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center mb-10">
             <Button
-              onClick={() => { setShowProducts(prev => !prev); handleGetLocation(); }}
+              onClick={() => setShowProducts(prev => !prev)}
               className="bg-[#1E4B85] hover:bg-[#163a68] text-white rounded-full px-10 py-6 text-sm font-bold uppercase tracking-wide transition-transform active:scale-[0.98] shadow-md"
               data-testid="button-toggle-products"
             >
@@ -328,7 +328,7 @@ export default function Home() {
       </section>
 
       {/* Find My Device Section */}
-      <section className="hidden py-24 px-4 bg-[#1E4B85] relative overflow-hidden text-white" id="find-my-device">
+      <section className="py-24 px-4 bg-[#1E4B85] relative overflow-hidden text-white" id="find-my-device">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         
         <div className="max-w-3xl mx-auto relative z-10">
