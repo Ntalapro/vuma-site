@@ -290,7 +290,7 @@ export default function Home() {
                     </Badge>
                   )}
                   {product.image ? (
-                    <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
+                    <img src={`${import.meta.env.BASE_URL}${product.image.replace(/^\//, "")}`} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shadow-inner">
                       <span className="text-gray-400 font-medium">Image coming soon</span>
