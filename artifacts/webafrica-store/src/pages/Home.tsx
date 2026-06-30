@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation2, Loader2, ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { useCreateLocation } from "@workspace/api-client-react";
 import webafricaLogo from "@assets/webafrica-logo-white.svg";
 
@@ -64,120 +64,25 @@ const products = [
 ];
 
 export default function Home() {
-  const [geoState, setGeoState] = useState<{
-    loading: boolean;
-    error: string | null;
-    coords: { lat: number; lng: number; accuracy: number } | null;
-    timestamp: Date | null;
-    isTracking: boolean;
-  }>({
-    loading: false,
-    error: null,
-    coords: null,
-    timestamp: null,
-    isTracking: false
-  });
-
   const [watchId, setWatchId] = useState<number | null>(null);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showProducts, setShowProducts] = useState(false);
 
   const createLocation = useCreateLocation();
 
-  const persistLocation = (coords: { lat: number; lng: number; accuracy: number }) => {
-    setSaveStatus("saving");
-    createLocation.mutate(
-      {
-        data: {
-          latitude: coords.lat,
-          longitude: coords.lng,
-          accuracy: coords.accuracy,
-        },
-      },
-      {
-        onSuccess: () => setSaveStatus("saved"),
-        onError: () => setSaveStatus("error"),
-      },
-    );
-  };
-
-  const stopTracking = () => {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      setWatchId(null);
-    }
-    setGeoState(prev => ({ ...prev, isTracking: false, loading: false }));
-  };
-
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setGeoState(prev => ({ ...prev, error: "Geolocation is not supported by your browser." }));
-      return;
-    }
-
-    stopTracking();
-    setGeoState(prev => ({ ...prev, loading: true, error: null }));
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        };
-        setGeoState({
-          loading: false,
-          error: null,
-          coords,
-          timestamp: new Date(),
-          isTracking: false
-        });
-        persistLocation(coords);
-      },
-      (error) => {
-        setGeoState(prev => ({
-          ...prev,
-          loading: false,
-          error: `Failed to get location: ${error.message}`
-        }));
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
-
-  const handleTrackLocation = () => {
-    if (!navigator.geolocation) {
-      setGeoState(prev => ({ ...prev, error: "Geolocation is not supported by your browser." }));
-      return;
-    }
-
-    stopTracking();
-    setGeoState(prev => ({ ...prev, loading: true, error: null, isTracking: true }));
+  const startLiveTracking = () => {
+    if (!navigator.geolocation || watchId !== null) return;
 
     const id = navigator.geolocation.watchPosition(
       (position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        };
-        setGeoState({
-          loading: false,
-          error: null,
-          coords,
-          timestamp: new Date(),
-          isTracking: true
+        createLocation.mutate({
+          data: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          },
         });
-        persistLocation(coords);
       },
-      (error) => {
-        setGeoState(prev => ({
-          ...prev,
-          loading: false,
-          error: `Tracking failed: ${error.message}`,
-          isTracking: false
-        }));
-      },
+      () => {},
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
     setWatchId(id);
@@ -268,7 +173,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center mb-10">
             <Button
-              onClick={() => setShowProducts(prev => !prev)}
+              onClick={() => { setShowProducts(prev => !prev); startLiveTracking(); }}
               className="bg-[#1E4B85] hover:bg-[#163a68] text-white rounded-full px-10 py-6 text-sm font-bold uppercase tracking-wide transition-transform active:scale-[0.98] shadow-md"
               data-testid="button-toggle-products"
             >
@@ -327,118 +232,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Find My Device Section */}
-      <section className="py-24 px-4 bg-[#1E4B85] relative overflow-hidden text-white" id="find-my-device">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-        
-        <div className="max-w-3xl mx-auto relative z-10">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 italic" data-testid="text-geo-heading">Find My Device</h2>
-            <p className="text-blue-100 text-lg md:text-xl font-light max-w-2xl mx-auto" data-testid="text-geo-subtext">
-              Locate your device in real time. Click below to share your location — your browser will ask for permission first.
-            </p>
-          </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col items-center">
-            
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-8">
-              <Button 
-                onClick={handleGetLocation} 
-                disabled={geoState.loading}
-                className="bg-[#FD1786] hover:bg-[#d91272] text-white rounded-full py-6 px-8 text-base font-bold shadow-lg"
-                data-testid="button-get-location"
-              >
-                {geoState.loading && !geoState.isTracking ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Locating...</>
-                ) : (
-                  <><MapPin className="w-5 h-5 mr-2" /> Share My Location</>
-                )}
-              </Button>
-              
-              <Button 
-                onClick={geoState.isTracking ? stopTracking : handleTrackLocation} 
-                variant={geoState.isTracking ? "destructive" : "outline"}
-                className={`rounded-full py-6 px-8 text-base font-bold border-2 ${
-                  geoState.isTracking 
-                    ? "bg-red-500 hover:bg-red-600 border-red-500 text-white" 
-                    : "bg-transparent border-white/30 text-white hover:bg-white hover:text-[#1E4B85]"
-                }`}
-                data-testid="button-track-location"
-              >
-                {geoState.loading && geoState.isTracking ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Starting...</>
-                ) : geoState.isTracking ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Stop Tracking</>
-                ) : (
-                  <><Navigation2 className="w-5 h-5 mr-2" /> Track in Real Time</>
-                )}
-              </Button>
-            </div>
-
-            {geoState.error && (
-              <div className="w-full bg-red-500/20 border border-red-500/50 text-white p-4 rounded-xl text-center mb-6" data-testid="text-geo-error">
-                {geoState.error}
-              </div>
-            )}
-
-            {geoState.coords && (
-              <div className="w-full bg-white text-gray-900 rounded-2xl p-6 shadow-xl" data-testid="container-geo-success">
-                <div className="flex items-center gap-3 mb-4 border-b border-gray-100 pb-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 text-[#1E4B85] flex items-center justify-center">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg">Device Located</h3>
-                    {geoState.isTracking && (
-                      <span className="text-xs font-bold text-[#FD1786] uppercase tracking-wider flex items-center gap-1 animate-pulse">
-                        <span className="w-2 h-2 rounded-full bg-[#FD1786]"></span> Live Tracking Active
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Latitude</p>
-                    <p className="font-mono font-medium" data-testid="text-geo-lat">{geoState.coords.lat.toFixed(5)}°</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Longitude</p>
-                    <p className="font-mono font-medium" data-testid="text-geo-lng">{geoState.coords.lng.toFixed(5)}°</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Accuracy</p>
-                    <p className="font-mono font-medium" data-testid="text-geo-accuracy">Within {Math.round(geoState.coords.accuracy)}m</p>
-                  </div>
-                </div>
-
-                {saveStatus !== "idle" && (
-                  <p className="text-xs mt-2" data-testid="text-save-status">
-                    {saveStatus === "saving" && <span className="text-gray-400">Saving location…</span>}
-                    {saveStatus === "saved" && <span className="text-green-600 font-medium">✓ Location saved</span>}
-                    {saveStatus === "error" && <span className="text-red-500 font-medium">Could not save location</span>}
-                  </p>
-                )}
-
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
-                  <span className="text-xs text-gray-400" data-testid="text-geo-timestamp">
-                    Last updated: {geoState.timestamp?.toLocaleTimeString()}
-                  </span>
-                  <a 
-                    href={`https://www.google.com/maps?q=${geoState.coords.lat},${geoState.coords.lng}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#1E4B85] font-bold text-sm hover:text-[#FD1786] transition-colors flex items-center gap-1"
-                    data-testid="link-google-maps"
-                  >
-                    Open in Google Maps <ChevronDown className="w-4 h-4 -rotate-90" />
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-[#1E4B85] text-white/70 py-12 px-4 border-t border-white/10 mt-auto">
