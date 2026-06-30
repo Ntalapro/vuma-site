@@ -80,6 +80,7 @@ export default function Home() {
 
   const [watchId, setWatchId] = useState<number | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [showProducts, setShowProducts] = useState(false);
 
   const createLocation = useCreateLocation();
 
@@ -265,6 +266,16 @@ export default function Home() {
       {/* Products Grid */}
       <section className="py-20 bg-gray-50 px-4">
         <div className="max-w-7xl mx-auto">
+          <div className="flex justify-center mb-10">
+            <Button
+              onClick={() => setShowProducts(prev => !prev)}
+              className="bg-[#1E4B85] hover:bg-[#163a68] text-white rounded-full px-10 py-6 text-sm font-bold uppercase tracking-wide transition-transform active:scale-[0.98] shadow-md"
+              data-testid="button-toggle-products"
+            >
+              {showProducts ? "Hide Products" : "View Products"}
+            </Button>
+          </div>
+          {showProducts && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
               <Card 
@@ -312,6 +323,7 @@ export default function Home() {
               </Card>
             ))}
           </div>
+          )}
         </div>
       </section>
 
