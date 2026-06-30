@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "0gMF8b0amSVvaqvWL-ObX"
+uri = "file://artifacts/webafrica-store/public/images/ematic-tv-box.png"
+type = "image"
+title = "Android TV Box black device"
+
+[[generated]]
+id = "FSdShWaReGhBJVacqVtov"
+uri = "file://artifacts/webafrica-store/public/images/netogy-tv-box.png"
+type = "image"
+title = "White Android TV Box device"
+
+[[generated]]
+id = "nsl4byY8TbGPaVV7R5hEf"
+uri = "file://artifacts/webafrica-store/public/images/netogy-ups.png"
+type = "image"
+title = "Compact UPS battery device"
+
+[[generated]]
+id = "YPND1V-_gldAeOlU75Dcm"
+uri = "file://artifacts/webafrica-store/public/images/deco-m4.png"
+type = "image"
+title = "Mesh WiFi system cylinders"
